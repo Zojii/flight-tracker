@@ -1,0 +1,43 @@
+version: "3"
+services:
+  db:
+    image: percona:5.7
+    restart: always
+    ports:
+      - ${MYSQL_PORT:-3307}:3306
+    volumes:
+      - ./docker/mysql/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+
+  sso:
+    image: jboss/keycloak:10.0.2
+    restart: always
+    ports:
+      - 10000:8080
+    volumes:
+      - ./docker/keycloak/moddell.json:/tmp/moddell.json
+    command: -Dkeycloak.profile.feature.upload_scripts=enabled
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=password
+      - KEYCLOAK_IMPORT=/tmp/moddell.json
+      - DB_VENDOR=h2
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: always
+    volumes:
+      - ${PWD}/docker/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
+      - ./docker/rabbitmq/data/:/var/lib/rabbitmq/
+      - ./docker/rabbitmq/logs/:/var/log/rabbitmq/
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  adminer:
+    image: adminer
+    restart: always
+    container_name: rise8-db-adminer
+    ports:
+      - 8181:8080

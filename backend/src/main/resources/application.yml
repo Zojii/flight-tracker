@@ -1,0 +1,9 @@
+spring:
+  config:
+    use-legacy-processing: true
+  profiles:
+    include: local
+  datasource:
+    url: jdbc:mysql://localhost:${=MYSQL_PORT:3307}/endor_development?useSSL=false&serverTimezone=UTC
+    username: endor_development
+    password: ${ENDOR_DEV_DB_PW}
